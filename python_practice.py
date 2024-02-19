@@ -38,6 +38,39 @@ ms_merged[['title','budget_per_emp']].sort_values('budget_per_emp', ascending=Fa
 # 9. ID 10299 Finding Updated Records
 ms_employee_salary.groupby(by=['id','first_name','last_name','department_id'])['salary'].max().reset_index().sort_values('id')
 
+# 10 ID 10170 Gender With Most Doctor Appointments
+medical_appointments.groupby(by='gender')['appointmentid'].count().reset_index().nlargest(n=1, columns='appointmentid')
+
+# 11 ID 10166 Reviews of Hotel Arena
+review_counts = hotel_reviews.groupby(by=['hotel_name','reviewer_score']).agg(n_reviews=('reviewer_score','count')).reset_index()
+review_counts[review_counts['hotel_name']=='Hotel Arena']
+
+# 12 ID 10164 Total AdWords Earnings
+google_adwords_earnings.groupby('business_type').agg(total_earnings=('adwords_earnings','sum')).reset_index()
+
+# 13 ID 10160 Rank guests based on their ages
+airbnb_guests['rank'] = airbnb_guests['age'].rank(method='min', ascending=False)
+airbnb_guests[['guest_id', 'rank']].sort_values('rank')
+
+# 14 ID 10156 Number Of Units Per Nationality
+airbnb_hosts[airbnb_hosts['age'] < 30].merge(airbnb_units[airbnb_units['unit_type'] == 'Apartment'], how = 'inner',left_on = 'host_id', right_on = 'host_id').drop_duplicates().groupby('nationality').size().reset_index()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
