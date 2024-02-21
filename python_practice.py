@@ -55,6 +55,34 @@ airbnb_guests[['guest_id', 'rank']].sort_values('rank')
 # 14 ID 10156 Number Of Units Per Nationality
 airbnb_hosts[airbnb_hosts['age'] < 30].merge(airbnb_units[airbnb_units['unit_type'] == 'Apartment'], how = 'inner',left_on = 'host_id', right_on = 'host_id').drop_duplicates().groupby('nationality').size().reset_index()
 
+# 15 ID 10153 Find the number of Yelp businesses that sell pizza
+len(yelp_business[yelp_business['categories'].str.contains('Pizza', case = False)])
+
+# 16 ID 10149 Gender With Generous Reviews
+merged_df = pd.merge(airbnb_reviews, airbnb_guests, how = 'inner', left_on = 'from_user', right_on = 'guest_id')
+merged_df.groupby(by='gender').agg(review_counts = ('review_score','mean')).reset_index()
+
+# 17 ID 10140 MacBook Pro Events
+merged_df = pd.merge(playbook_events,playbook_users, how='inner', on='user_id')
+filtered_df = merged_df[(merged_df['language'] != 'Spanish') & (merged_df['device'].str.lower() == 'macbook pro') & (merged_df['location'] == 'Argentina')]
+filtered_df.groupby(by=['company_id','language']).size().to_frame('n_events').reset_index()
+
+# 18 ID 10139 Number of Speakers By Language
+merged_df = pd.merge(playbook_events,playbook_users, on='user_id', how='inner')
+merged_df.groupby(by=['location','language'])['user_id'].nunique().reset_index().sort_values(['location','user_id'])
+
+# 19 ID 10137 Even-numbered IDs Hired in June
+worker[(worker['joining_date'].dt.month == 6) & (worker['worker_id']%2 != 1)]
+
+
+
+
+
+
+
+
+
+
 
 
 
