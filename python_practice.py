@@ -74,6 +74,31 @@ merged_df.groupby(by=['location','language'])['user_id'].nunique().reset_index()
 # 19 ID 10137 Even-numbered IDs Hired in June
 worker[(worker['joining_date'].dt.month == 6) & (worker['worker_id']%2 != 1)]
 
+# 20 ID 10136 Odd-numbered ID's Hired in February
+worker['joining_month'] = worker['joining_date'].dt.month
+worker[(worker['joining_month'] == 2) & worker['worker_id'] % 2 == 1].drop(['joining_month'], axis=1)
+
+# 21 ID 10128 Count the number of movies that Abigail Breslin nominated for oscar
+len(oscar_nominees[oscar_nominees['nominee'].str.lower() == 'abigail breslin'])
+
+# 22 ID 10127 Calculate Samantha's and Lisa's total sales revenue
+filtered_df = sales_performance[sales_performance['salesperson'].str.lower().isin(['samantha','lisa'])]
+filtered_df['sales_revenue'].sum()
+
+# 23 ID 10087 Find all posts which were reacted to with a heart
+heart_post_id_list = list(facebook_reactions[facebook_reactions['reaction'].str.lower()=='heart']['post_id'].unique())
+facebook_posts[facebook_posts['post_id'].isin(heart_post_id_list)]
+
+# 24 ID 10078 Find matching hosts and guests in a way that they are both of the same gender and nationality
+pd.merge(airbnb_hosts,airbnb_guests,how='inner', on=['nationality','gender'])[['host_id','guest_id']].drop_duplicates()
+
+
+
+
+
+
+
+
 
 
 
