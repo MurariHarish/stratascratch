@@ -92,6 +92,39 @@ facebook_posts[facebook_posts['post_id'].isin(heart_post_id_list)]
 # 24 ID 10078 Find matching hosts and guests in a way that they are both of the same gender and nationality
 pd.merge(airbnb_hosts,airbnb_guests,how='inner', on=['nationality','gender'])[['host_id','guest_id']].drop_duplicates()
 
+# 25 ID 10020 Find prices for Spanish, Italian, and French wines
+countries = ['Spain','Italy','France']
+winemag_p1[winemag_p1['country'].isin(countries)][['price']]
+
+# 26 ID 10022 Find all wine varieties which can be considered cheap based on the price
+winemag_p1.query('5 < price <= 20')[['variety']].drop_duplicates()
+
+# 27 ID 2004 Number of Comments Per User in 30 days before 2020-02-10
+fb_comments_count[(fb_comments_count['created_at'] >= pd.to_datetime('2020-02-10') - timedelta(days=30)) & (fb_comments_count['created_at'] <= pd.to_datetime('2020-02-10'))].groupby('user_id').sum().reset_index()
+
+# 28 ID 2005 Share of Active Users
+result = fb_active_users[fb_active_users['country'] == 'USA'].groupby('status')['user_id'].count().to_frame(
+    'user_count')
+result = result.loc['open'] / result['user_count'].sum()
+
+# 29 ID 2002 Submission Types
+result1 = loans[loans['type'] == 'Refinance']
+result2 = loans[loans['type'] == 'InSchool']
+result = pd.merge(result1,result2,on='user_id',how='inner')[['user_id']].drop_duplicates()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
