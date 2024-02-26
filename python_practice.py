@@ -1,4 +1,47 @@
 import pandas as pd
+# Medium Questions
+
+# 1 ID 10352 Users By Average Session Time
+facebook_page_load = facebook_web_log[facebook_web_log['action'] == 'page_load']
+facebook_page_load['day'] = facebook_page_load['timestamp'].dt.date
+facebook_page_load.groupby(['user_id','day'], as_index=False).max()
+facebook_page_exit = facebook_web_log[facebook_web_log['action'] == 'page_exit']
+facebook_page_exit['day'] = facebook_page_exit['timestamp'].dt.date
+facebook_page_exit.groupby(['user_id','day'], as_index=False).min()
+merged_df = pd.merge(facebook_page_load,facebook_page_exit,how='inner',on=['user_id','day'])
+merged_df['diff'] = merged_df['timestamp_y'] - merged_df['timestamp_x']
+merged_df.groupby('user_id')['diff'].mean().dropna().reset_index()
+
+# 2 ID 10351 Activity Rank
+gmails_groupby = google_gmail_emails.groupby('from_user').agg(n_emails = ('to_user','count')).reset_index()
+gmails_groupby['rank'] = gmails_groupby['n_emails'].rank(method = 'first',ascending=False)
+gmails_groupby.sort_values(by=['n_emails', 'from_user'], ascending=[False, True])
+
+# 3 ID 10324 Distances Traveled
+lyft_user_merge = pd.merge(lyft_rides_log,lyft_users,how='inner',left_on='user_id',right_on='id')
+lyft_user_by_distance = lyft_user_merge.groupby(['user_id','name'])['distance'].sum().reset_index()
+lyft_user_by_distance['rank'] = lyft_user_by_distance['distance'].rank(ascending=False)
+top_10=lyft_user_by_distance[lyft_user_by_distance['rank']<= 10].sort_values('rank',ascending=True)
+top_10.iloc[:,:-1]
+
+# 4 ID 10322 Finding User Purchases
+amazon_transactions['created_at'] = pd.to_datetime(amazon_transactions['created_at']).dt.strftime('%m-%d-%Y')
+df = amazon_transactions.sort_values(['user_id','created_at'], ascending=[True,True])
+df['prev_value'] = df.groupby('user_id')['created_at'].shift()
+df['days_diff'] = (pd.to_datetime(df['created_at']) - pd.to_datetime(df['prev_value'])).dt.days
+df[df['days_diff'] < 7]['user_id'].unique()
+
+# 5 ID 10318 New Products
+car_launch_groupby = car_launches.groupby(['company_name','year'])['product_name'].count().reset_index()
+car_launch_pivot = car_launch_groupby.pivot_table(index = 'company_name', columns='year', values = 'product_name').reset_index()
+car_launch_pivot['net_diff'] = car_launch_pivot[2020] - car_launch_pivot[2019]
+car_launch_pivot[['company_name','net_diff']]
+
+
+
+
+
+# Easy Questions
 
 # 1. ID 10356 Finding Doctors
 def doctors_lname_Johnson (df: pd.DataFrame) -> pd.DataFrame:
