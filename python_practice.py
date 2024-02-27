@@ -37,6 +37,36 @@ car_launch_pivot = car_launch_groupby.pivot_table(index = 'company_name', column
 car_launch_pivot['net_diff'] = car_launch_pivot[2020] - car_launch_pivot[2019]
 car_launch_pivot[['company_name','net_diff']]
 
+# 6 ID 10366 Customer Feedback Analysis
+customer_feedback[(customer_feedback['source_channel'] == 'social_media') & (customer_feedback['comment_category']!= 'short_comments')].drop_duplicates()
+
+# 7 ID 10364 Friday's Likes Count
+reverse_friendships = friendships.rename(columns={'user_name1': 'user_name2', 'user_name2': 'user_name1'})
+bidirectional_friendships = pd.concat([friendships, reverse_friendships], ignore_index=True).drop_duplicates()
+post_likes_df = pd.merge(user_posts,likes,how='inner',on=['post_id'])
+post_likes_friends_df = pd.merge(post_likes_df,bidirectional_friendships,how='inner',left_on=['user_name_x','user_name_y'],right_on=['user_name1','user_name2'])
+post_likes_friends_df['weekday'] = post_likes_friends_df['date_liked'].dt.day_name()
+post_likes_friends_df[post_likes_friends_df['weekday'] == 'Friday'].groupby('date_liked').size().reset_index(name='likes')
+
+# 8 ID 10315 Cities With The Most Expensive Homes
+average_home_price = pd.DataFrame(zillow_transactions.groupby('city')['mkt_price'].mean().reset_index(name = 'city_avg_price'))
+zillow_transactions['national_avg'] = zillow_transactions['mkt_price'].mean()
+merged_df = pd.merge(average_home_price,zillow_transactions,how='inner',on='city')
+merged_df[merged_df['city_avg_price'] > merged_df['national_avg']]['city'].drop_duplicates()
+
+# 9 ID 10304 Risky Projects
+linkedin_projects['project_days'] = (pd.to_datetime(linkedin_projects['end_date']) - pd.to_datetime(linkedin_projects['start_date'])).dt.days
+linkedin_employees['per_day_salary'] = (linkedin_employees['salary'] / 365).round()
+emp_projects_df = pd.merge(linkedin_employees,linkedin_emp_projects,how='inner',left_on='id',
+right_on='emp_id')
+project_emp_salary = emp_projects_df.groupby('project_id')['per_day_salary'].sum().reset_index()
+final_project_emp_df = pd.merge(linkedin_projects,project_emp_salary,how='inner',left_on='id',right_on='project_id')
+final_project_emp_df['project_emp_salary'] = final_project_emp_df['per_day_salary'] * final_project_emp_df['project_days']
+final_project_emp_df[final_project_emp_df['budget'] < final_project_emp_df['project_emp_salary']][['title','budget','project_emp_salary']]
+
+# 10 ID 10303 Top Percentile Fraud
+fraud_score['percentile'] = fraud_score.groupby('state')['fraud_score'].rank(pct=True)
+fraud_score[fraud_score['percentile']>0.95].iloc[:,:-1]
 
 
 
