@@ -68,6 +68,64 @@ final_project_emp_df[final_project_emp_df['budget'] < final_project_emp_df['proj
 fraud_score['percentile'] = fraud_score.groupby('state')['fraud_score'].rank(pct=True)
 fraud_score[fraud_score['percentile']>0.95].iloc[:,:-1]
 
+# 11 ID 10159 Ranking Most Active Guests
+df = airbnb_contacts.groupby('id_guest')['n_messages'].sum().reset_index()
+df['ranking'] = df['n_messages'].rank(method='dense',ascending=False)
+df[['ranking','id_guest','n_messages']].sort_values(by=['n_messages'],ascending=False)
+
+# 12 ID 10161 Ranking Hosts By Beds
+airbnb_hosts = airbnb_apartments.groupby('host_id')['n_beds'].sum().reset_index()
+airbnb_hosts['rank'] = airbnb_hosts['n_beds'].rank(method = 'dense',ascending=False)
+airbnb_hosts.sort_values('rank',ascending=True)
+
+# 13 ID 10169 Highest Total Miles
+uber_business = my_uber_drives[my_uber_drives['category'].str.lower() == 'business']
+uber_business.groupby('purpose')['miles'].sum().to_frame('total_miles').reset_index().sort_values(by='total_miles',ascending = False).head(3)
+
+# 14 ID 10180 Find the lowest score for each facility in Hollywood Boulevard
+holly_blvd = los_angeles_restaurant_health_inspections[los_angeles_restaurant_health_inspections['facility_address'].str.contains('HOLLYWOOD BLVD')]
+holly_blvd.groupby('facility_name')['score'].min().reset_index().sort_values('score',ascending=False)
+
+# 15 ID 10187 Find the total number of available beds per hosts' nationality
+merged_df = pd.merge(airbnb_apartments,airbnb_hosts,how='inner',on='host_id')
+merged_df.groupby('nationality')['n_beds'].sum().to_frame('n_beds_available').reset_index().sort_values(by='n_beds_available',ascending=False)
+
+# 16 ID 10283 Find the top-ranked songs for the past 20 years.
+billboard_top_100_year_end['year_diff'] = datetime.now().year - billboard_top_100_year_end['year']
+result = billboard_top_100_year_end[(billboard_top_100_year_end['year_diff'] <=20) & (billboard_top_100_year_end['year_rank'] == 1)]['song_name'].unique()
+
+# 17 ID 10284 Popularity Percentage
+n = len(np.unique(np.concatenate([facebook_friends['user1'].values, facebook_friends['user2'].values])))
+revert = facebook_friends.rename(columns = {'user1':'user2', 'user2':'user1'})
+final = pd.concat([facebook_friends, revert], sort = False).drop_duplicates()
+df = final.groupby('user1').size().to_frame('count_friends').reset_index()
+df['popularity_percentage'] = (df['count_friends']/n)*100
+df[['user1', 'popularity_percentage']]
+
+# 18 ID 10285 Acceptance Rate By Date
+fb_sent = fb_friend_requests[fb_friend_requests['action'] == 'sent']
+fb_accp = fb_friend_requests[fb_friend_requests['action'] == 'accepted']
+merged_df = pd.merge(fb_sent,fb_accp,how='left',on=['user_id_sender','user_id_receiver'])
+fb_grouped = merged_df.groupby('date_x').count().reset_index()
+fb_grouped['accp_rate'] = fb_grouped['action_y'] / fb_grouped['action_x']
+fb_grouped[['date_x','accp_rate']]
+
+# 19 ID 10291 SMS Confirmations From Users
+fb_sms_sends = fb_sms_sends[fb_sms_sends['type'] == 'message']
+df1 = fb_sms_sends.groupby('ds')['phone_number'].count().reset_index()
+df1_0804 = df1[df1['ds'].dt.date.astype('str') == '2020-08-04']
+df = fb_sms_sends.merge(fb_confirmers, how='left', left_on = ['phone_number','ds'], right_on=['phone_number','date'])
+grouped_df = df.groupby('date')['phone_number'].count().reset_index()
+grouped_0804 = grouped_df[grouped_df['date'].dt.date.astype('str') == '2020-08-04']
+100*float(grouped_0804['phone_number']) / df1_0804['phone_number']
+
+# 20 ID 10295 Most Active Users On Messenger
+fb_reverse = fb_messages.rename(columns={'user1':'user2','user2':'user1'})
+merged_df = pd.concat([fb_messages,fb_reverse], ignore_index = True).drop_duplicates()
+merged_df.groupby('user1').agg(n_msg_sent_received = ('msg_count','sum')).reset_index().sort_values(by='n_msg_sent_received',ascending=False).head(10)
+
+
+
 
 
 
