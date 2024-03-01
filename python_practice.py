@@ -124,11 +124,34 @@ fb_reverse = fb_messages.rename(columns={'user1':'user2','user2':'user1'})
 merged_df = pd.concat([fb_messages,fb_reverse], ignore_index = True).drop_duplicates()
 merged_df.groupby('user1').agg(n_msg_sent_received = ('msg_count','sum')).reset_index().sort_values(by='n_msg_sent_received',ascending=False).head(10)
 
+# 21 ID 10152 Workers With The Highest And Lowest Salaries
+filtered_df = worker[(worker['salary'] == worker['salary'].max()) | (worker['salary'] == worker['salary'].min())][['worker_id','salary','department']]
+filtered_df.loc[filtered_df['salary'] == filtered_df['salary'].max(), "salary_type"] = 'Highest Salary'
+filtered_df.loc[filtered_df['salary'] == filtered_df['salary'].min(), "salary_type"] = 'Lowest Salary'
+
+# 22 ID 10148 Find the top 5 cities with the most 5 star businesses
+stars = yelp_business[yelp_business['stars'] == 5]
+stars = stars.groupby(['city'])['stars'].count().to_frame('count_of_5_stars').reset_index()
+stars['rank'] = stars['count_of_5_stars'].rank(method='min', ascending=False)
+result = stars[stars['rank'] <= 5][['city', 'count_of_5_stars']].sort_values('count_of_5_stars', ascending = False)
+
+# 23 ID 10144 Average Weight of Medal-Winning Judo
+filtered_df = olympics_athletes_events[(olympics_athletes_events['age'].between(20,30)) & (olympics_athletes_events['sport'] == 'Judo')]
+filtered_df.groupby('team')['weight'].mean().reset_index()
+
+# 24 ID 10143 Find players who participated in the Olympics representing more than one team
+olympics_athletes_events[olympics_athletes_events['team'].str.contains('/')][['name','team','games','sport','medal']]
+
+# 25 ID 10134 Spam Posts
+merged_df = pd.merge(facebook_posts,facebook_post_views,how='inner',on='post_id')
+merged_df.loc[merged_df['post_keywords'].str.contains('spam'),"is_spam"] = 'Yes'
+merged_df = merged_df.groupby('post_date').count().reset_index()
+merged_df['spam_share'] = merged_df['is_spam']/merged_df['post_keywords']*100
+merged_df[['post_date','spam_share']]
 
 
 
-
-
+ 
 # Easy Questions
 
 # 1. ID 10356 Finding Doctors
