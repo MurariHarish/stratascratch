@@ -1,4 +1,61 @@
 import pandas as pd
+# Hard Questions
+
+# 1 ID 10369 Spotify Penetration Analysis
+current_date = datetime(2024,1,31)
+penetration_analysis['last_active_date'] = pd.to_datetime(penetration_analysis['last_active_date'])
+thirty_day_window = current_date - timedelta(days=30)
+penetration_analysis_active_users = penetration_analysis[(penetration_analysis['last_active_date'] >= thirty_day_window) & (penetration_analysis['monthly_active_sessions'] >= 5) & (penetration_analysis['listening_hours'] >= 10)]
+active_users = penetration_analysis_active_users.groupby('country').agg(n_active_users = ('total_population','count')).reset_index()
+total_users = penetration_analysis.groupby('country').agg(total_users = ('total_population','first')).reset_index()
+merged_df = pd.merge(active_users,total_users,how='right',on='country')
+merged_df['active_user_penetration_rate'] = (merged_df['n_active_users'] / merged_df['total_users']).map(lambda x: format(x,'.10f'))
+merged_df[['country','active_user_penetration_rate']]
+
+# 2 ID 10368 Population Density
+cities_population['pop_density'] = cities_population['population'] / cities_population['area']
+cities_population.dropna(inplace=True)
+cities_population['high'] = cities_population['pop_density'].rank(ascending=False,method = 'dense')
+cities_population['low'] = cities_population['pop_density'].rank(ascending = True,method = 'dense')
+min_max_pop_density = pd.DataFrame(cities_population[(cities_population['high'] == 1) | (cities_population['low'] == 1)])
+min_max_pop_density[['city','country','pop_density']]
+
+# 3 ID 10358 Friday Purchases
+user_purchases['date'] = pd.to_datetime(user_purchases['date'])
+friday_purchases = user_purchases[user_purchases['day_name'].str.lower() == 'friday']
+friday_purchases['week_number'] = friday_purchases['date'].dt.week
+amount_spent = friday_purchases.groupby('week_number')['amount_spent'].sum().reset_index()
+user_count = friday_purchases.groupby('week_number')['user_id'].count().reset_index()
+merged_df = pd.merge(amount_spent,user_count,how='inner',on='week_number')
+merged_df['purchase_rate'] = merged_df['amount_spent'] / merged_df['user_id']
+
+# 4 ID 10355 Employees With Same Birth Month
+n_employee_birth_month = employee_list.groupby(['profession','birth_month']).agg(n_birthdays = ('birthday','count')).reset_index()
+birth_month_pivot = pd.pivot_table(n_employee_birth_month, index='profession',columns='birth_month',values= 'n_birthdays',fill_value= 0).reset_index()
+birth_month_pivot.columns = ['department'] + [f'Month_{month}' for month in range(1, 13)]
+
+# 5 ID 10350 Algorithm Performance
+fb_search_events['ratings'] = fb_search_events.apply(lambda x: 1 if x['clicked'] == 0 else 2 if x['search_results_position'] > 3 else 3, axis = 1)
+fb_search_events.groupby('search_id')['ratings'].max().reset_index()
+
+
+
+
+
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
 # Medium Questions
 
 # 1 ID 10352 Users By Average Session Time
